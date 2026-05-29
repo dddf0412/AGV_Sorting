@@ -1,0 +1,43 @@
+# STM32CubeIDE build output
+Debug/
+Release/
+
+# Eclipse/CubeIDE metadata (user-specific)
+.metadata/
+.settings/
+*.mxproject
+*.cproject
+*.project
+
+# Compiled objects
+*.o
+*.obj
+*.elf
+*.hex
+*.bin
+*.map
+*.list
+*.d
+*.su
+
+# Static library
+*.a
+*.la
+*.lai
+*.so
+*.dll
+
+# Editor/IDE
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Temporary
+tmp/
+temp/
