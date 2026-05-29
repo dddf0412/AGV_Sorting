@@ -30,10 +30,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "nfc.h"
-#include "microphone.h"
-#include "h753_can.h"
-#include "h753_debug.h"
+#include "app_h753.h"
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -60,7 +57,6 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
-static void Simulate_SendCommands(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -111,57 +107,17 @@ int main(void)
   MX_DCMI_Init();
   MX_DFSDM1_Init();
   /* USER CODE BEGIN 2 */
-  H753_Debug_Init();
-  H753_CAN_Init();
-  printf("\r\n========== H753 Master Simulator Started ==========\r\n");
-  printf("CAN bus initialized (1Mbps), filter accepts all standard IDs\r\n");
+  App_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  uint32_t lastHeartbeat = 0;
-  H753_StatusFrame_t status;
-
-
   while (1)
   {
-	  /* Send heartbeat every 100ms */
-	          if (HAL_GetTick() - lastHeartbeat >= 100)
-	          {
-	              lastHeartbeat = HAL_GetTick();
-	              if (H753_CAN_SendHeartbeat() == 0)
-	              {
-	                  printf("[H753] Send heartbeat ID=0x2FF\r\n");
-	              }
-	              else
-	              {
-	                  printf("[H753] Heartbeat send failed!\r\n");
-	              }
-	          }
+      App_Run();
+  /* USER CODE END WHILE */
 
-	          /* Simulate sending commands every 2 seconds (AGV, conveyor, servo) */
-	          static uint32_t lastCmd = 0;
-	          if (HAL_GetTick() - lastCmd >= 2000)
-	          {
-	              lastCmd = HAL_GetTick();
-	              Simulate_SendCommands();
-	          }
-
-	          /* Process received status frames from G474 */
-	          if (H753_CAN_IsStatusFrameValid())
-	          {
-	              H753_CAN_GetStatus(&status);
-	              H753_CAN_ClearStatusFlag();
-
-	              printf("\r\n[Status] encoder=%d | dc_speed=%d | step_speed=%d | "
-	                     "sensor_left=%d | sensor_right=%d | sys_status=0x%02X\r\n",
-	                     status.encoder_cnt, status.dc_speed, status.step_speed,
-	                     status.sensor_left, status.sensor_right, status.sys_status);
-	          }
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+  /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -256,34 +212,6 @@ void PeriphCommonClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-static void Simulate_SendCommands(void)
-{
-    static uint8_t cmdIdx = 0;
-    uint8_t ret;
-
-    switch (cmdIdx % 3)
-    {
-        case 0:
-            printf("\r\n[Sim decision] Send AGV cmd: speed=120, dir=forward\r\n");
-            ret = H753_CAN_SendAgvCmd(120, 0);
-            break;
-        case 1:
-            printf("[Sim decision] Send conveyor cmd: start, speed=80, dir=forward\r\n");
-            ret = H753_CAN_SendConveyorCmd(1, 80, 0);
-            break;
-        case 2:
-            printf("[Sim decision] Send servo cmd: pitch=90 deg, yaw=45 deg\r\n");
-            {
-                uint8_t data[8] = {90, 45, 0, 0, 0, 0, 0, 0};
-                ret = H753_CAN_SendRaw(0x203, data, 8);
-            }
-            break;
-    }
-    if (ret != 0)
-        printf("[Error] CAN send failed!\r\n");
-
-    cmdIdx++;
-}
 /* USER CODE END 4 */
 
  /* MPU Configuration */

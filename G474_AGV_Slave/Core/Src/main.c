@@ -26,13 +26,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "agv_g474.h"
-#include "motor_control.h"
-#include "g474_can.h"
-#include "g474_debug.h"
+#include "app_g474.h"
 #include <stdio.h>
-#include <string.h>
-#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,7 +54,6 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-static void Simulate_UpdateStatus(G474_StatusFrame_t *status);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -105,84 +99,17 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-  //AGV_Init();
-  //Motor_Init();
-  //printf("AGV G474 Slave Boot OK\r\n");
-
-  G474_Debug_Init();
-  G474_CAN_Init();
-  printf("\r\n========== G474 Slave Simulator Started ==========\r\n");
-   printf("CAN bus initialized (1Mbps), filter accepts all standard IDs\r\n");
-
-
+  App_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  G474_StatusFrame_t status;
-    memset(&status, 0, sizeof(status));
-    status.tail = 0xAA;
-
-    uint32_t lastSend = 0;
-    uint32_t lastHeartbeatCheck = 0;
   while (1)
   {
-	  /* Send status frame every 100ms */
-	          if (HAL_GetTick() - lastSend >= 100)
-	          {
-	              lastSend = HAL_GetTick();
-	              Simulate_UpdateStatus(&status);
-	              if (G474_CAN_SendStatus(&status) == 0)
-	              {
-	                  printf("[G474] Send status ID=0x301, encoder=%d, left/right sensors=%d/%d\r\n",
-	                         status.encoder_cnt, status.sensor_left, status.sensor_right);
-	              }
-	              else
-	              {
-	                  printf("[G474] Status send failed!\r\n");
-	              }
-	          }
+      App_Run();
+  /* USER CODE END WHILE */
 
-	          /* Check heartbeat timeout */
-	          if (HAL_GetTick() - lastHeartbeatCheck >= 500)
-	          {
-	              lastHeartbeatCheck = HAL_GetTick();
-	              if (!G474_CAN_IsHeartbeatReceived())
-	              {
-	                  printf("[G474 Safety] No heartbeat from H753 for >500ms! Simulating stop all motors\r\n");
-	              }
-	              else
-	              {
-	                  G474_CAN_ClearHeartbeatFlag();
-	              }
-	          }
-
-	          /* Process received CAN commands */
-	          uint32_t rxId = G474_CAN_GetLastRxID();
-	          if (rxId != 0)
-	          {
-	              uint8_t *data = G474_CAN_GetLastRxData();
-	              switch (rxId)
-	              {
-	                  case CAN_ID_AGV_CMD:
-	                      printf("[Sim exec] AGV cmd: speed=%d, dir=%s\r\n",
-	                             data[0], data[1] ? "reverse" : "forward");
-	                      break;
-	                  case CAN_ID_CONVEYOR_CMD:
-	                      printf("[Sim exec] Conveyor cmd: run=%d, speed=%d, dir=%s\r\n",
-	                             data[0], data[1], data[2] ? "reverse" : "forward");
-	                      break;
-	                  case CAN_ID_SERVO_CMD:
-	                      printf("[Sim exec] Servo cmd: pitch=%d deg, yaw=%d deg\r\n", data[0], data[1]);
-	                      break;
-	                  default:
-	                      break;
-	              }
-	              G474_CAN_ClearLastRxID();
-	          }
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+  /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -233,39 +160,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-/* 模拟传感器和编码器数据（可自增或随机） */
-static void Simulate_UpdateStatus(G474_StatusFrame_t *status)
-{
-    static int16_t encoder = 0;
-    static uint8_t left = 50, right = 50;
-    static int8_t  dc = 0;
-    static uint8_t step = 0;
-
-    encoder += 10;
-    if (encoder > 3000) encoder = 0;
-
-    /* Simple triangular wave for sensors */
-    step++;
-    if (step < 128) {
-        left = 50 + step;
-        right = 50 + 128 - step;
-    } else {
-        left = 50 + (255 - step);
-        right = 50 + (step - 128);
-    }
-
-    dc = (dc == 0) ? 60 : 0;
-
-    status->dc_speed     = dc;
-    status->step_speed   = 100;
-    status->encoder_cnt  = encoder;
-    status->sensor_left  = left;
-    status->sensor_right = right;
-    status->sys_status   = 0;
-    status->tail         = 0xAA;
-}
-
-
 /* USER CODE END 4 */
 
 /**
