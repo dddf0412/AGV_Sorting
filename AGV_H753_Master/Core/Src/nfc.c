@@ -10,6 +10,7 @@
 #include "spi.h"
 #include "gpio.h"
 #include "usart.h"
+#include "screen.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -597,6 +598,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
             rx_ring.head = next;
         }
         UART_RxStart();
+    }
+    else if (huart->Instance == USART1) {
+        Screen_RxISR(screen_rx_byte);
+        HAL_UART_Receive_IT(&huart1, &screen_rx_byte, 1);
     }
 }
 

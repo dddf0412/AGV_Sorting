@@ -7,7 +7,6 @@
 void App_Init(void);
 void App_Run(void);
 
-/*================ 占位函数 — 真实模式下逐步实现 ================*/
-void Screen_Task(void);  /* 串口屏任务（待实现）*/
+/* Screen_Task 由 screen.h 声明，screen.c 实现 */
 
 #endif

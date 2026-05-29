@@ -7,6 +7,8 @@
 #if (APP_MODE == 1)
 #include "nfc.h"
 #include "microphone.h"
+#include "screen.h"
+extern UART_HandleTypeDef huart1;
 #endif
 
 /*================ 私有原型 ================*/
@@ -24,6 +26,7 @@ void App_Init(void)
     printf("\r\n========== H753 Master Simulator ==========\r\n");
 #else
     printf("\r\n========== H753 Master Running ==========\r\n");
+    Screen_Init(&huart1);
 #endif
     printf("CAN bus (1Mbps), filter accepts all standard IDs\r\n");
 }
@@ -78,14 +81,20 @@ void App_Run(void)
     /* 麦克风 DMA 缓冲区处理 */
     mic_process();
 
-    /* 串口屏任务（待实现） */
+    /* 串口屏 RX 处理 + 状态推送 */
     Screen_Task();
 
-    /* 接收状态帧并更新屏幕 */
+    /* 接收状态帧并推送串口屏 */
     if (H753_CAN_IsStatusFrameValid()) {
         H753_CAN_GetStatus(&status);
         H753_CAN_ClearStatusFlag();
-        /* TODO: 推送到串口屏 */
+
+        /* 更新串口屏显示 */
+        Screen_SetVal("n0", status.dc_speed);
+        Screen_SetVal("n1", status.step_speed);
+        Screen_SetVal("n2", status.encoder_cnt);
+        Screen_SetVal("n3", status.sensor_left);
+        Screen_SetVal("n4", status.sensor_right);
     }
 
 #endif
@@ -120,14 +129,4 @@ static void Simulate_SendCommands(void)
 
     cmdIdx++;
 }
-#endif
-
-/*================ 占位函数 ================*/
-#if (APP_MODE == 1)
-__weak void Screen_Task(void)
-{
-    /* TODO: 串口屏 UART 轮询 + 页面刷新 */
-}
-#else
-__weak void Screen_Task(void) {}
 #endif
