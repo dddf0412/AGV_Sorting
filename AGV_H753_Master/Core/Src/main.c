@@ -106,6 +106,7 @@ int main(void)
   MX_I2S2_Init();
   MX_DCMI_Init();
   MX_DFSDM1_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   App_Init();
   /* USER CODE END 2 */
@@ -115,9 +116,9 @@ int main(void)
   while (1)
   {
       App_Run();
-  /* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-  /* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }

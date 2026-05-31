@@ -29,9 +29,16 @@ void Screen_Init(UART_HandleTypeDef *huart)
     rx_head = 0;
     rx_tail = 0;
 
-    /* 启动中断接收（单字节循环模式） */
+    /* 等屏幕上电完成 (参考官方51例程) */
+    HAL_Delay(80);
+
+    /* 发一帧空结束符清除链路 */
+    uint8_t clear[3] = {0xFF, 0xFF, 0xFF};
+    HAL_UART_Transmit(huart, clear, 3, 10);
+
+    /* 启动中断接收 */
     HAL_UART_Receive_IT(huart, &screen_rx_byte, 1);
-    printf("[Screen] Init OK on USART1 (PB14/PB15, 115200)\r\n");
+    printf("[Screen] Init OK on USART1 (PB14/PB15, 9600)\r\n");
 }
 
 /*================ 页面切换 ================*/
@@ -149,7 +156,7 @@ static void _parse_rx(void)
             peek[i] = rx_buf[(rx_tail + i) % SCREEN_RX_BUF_SIZE];
         }
 
-        /* 检查帧头 0x65 + 帧尾 FF FF FF */
+        /* TJC 官方回传格式: 0x65=触摸, 0x66=页面ID, 0x88=启动 */
         if (peek[0] == 0x65 && peek[4] == 0xFF && peek[5] == 0xFF && peek[6] == 0xFF)
         {
             uint8_t page  = peek[1];

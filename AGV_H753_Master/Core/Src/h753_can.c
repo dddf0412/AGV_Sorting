@@ -73,10 +73,10 @@ uint8_t H753_CAN_SendRaw(uint32_t id, uint8_t *data, uint8_t len)
 
     if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, data) != HAL_OK)
     {
-        printf("[CAN] Send ID=0x%03X failed\r\n", id);
+        printf("[CAN] Send ID=0x%03lX failed\r\n", id);
         return 1;
     }
-    printf("[CAN] Sent ID=0x%03X, data: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
+    printf("[CAN] Sent ID=0x%03lX, data: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
            id, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
     return 0;
 }
@@ -88,7 +88,7 @@ void H753_CAN_RxHandler(void)
 
     if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK)
     {
-        printf("[CAN] Received ID=0x%03X, data: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
+        printf("[CAN] Received ID=0x%03lX, data: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
                RxHeader.Identifier, RxData[0], RxData[1], RxData[2], RxData[3],
                RxData[4], RxData[5], RxData[6], RxData[7]);
 
