@@ -7,11 +7,13 @@
 #include "nfc.h"
 #include "microphone.h"
 #include "screen.h"
+#include "camera.h"
 extern UART_HandleTypeDef huart1;
+extern I2C_HandleTypeDef hi2c1;
 #endif
 
 /*================ 调试开关 ================*/
-#define CAN_ENABLE  1  /* 1=启用CAN, 0=关闭CAN (仅查串口屏时关) */
+#define CAN_ENABLE  0  /* 1=启用CAN, 0=关闭CAN (仅调试摄像头时关) */
 
 /*================ App_Init ================*/
 void App_Init(void)
@@ -29,9 +31,17 @@ void App_Init(void)
     printf("\r\n========== H753 Master Running ==========\r\n");
     Screen_Init(&huart1);
 
-    /* 上屏: 切到首页, 显示标题 */
+#if 0  /* 暂时关闭屏幕数据显示 */
     Screen_SendRaw("page main");
     Screen_SetText("t1", "系统就绪");
+#endif
+
+    /* 摄像头初始化 */
+    if (Camera_Init() == CAMERA_OK) {
+        Camera_Start();
+    } else {
+        printf("[App] Camera init failed!\r\n");
+    }
 #endif
 }
 
@@ -76,14 +86,18 @@ void App_Run(void)
 #else
     /*==================== 真实模式 ====================*/
 
-    /*--- 串口屏触摸处理 ---*/
+    /*--- 串口屏触摸处理 (暂时关闭) ---*/
+#if 0
     Screen_Task();
+#endif
 
-    /*--- 每 1s 刷新屏幕显示 ---*/
+    /*--- 每 1s 刷新屏幕显示 (暂时关闭) ---*/
+#if 0
     if (HAL_GetTick() - lastDisplay >= 1000) {
         lastDisplay = HAL_GetTick();
         Screen_SetVal("n2", g474_online ? (int32_t)status.encoder_cnt : -1);
     }
+#endif
 
 #if CAN_ENABLE
     /*--- 每 100ms 心跳 ---*/
@@ -100,7 +114,8 @@ void App_Run(void)
         g474_online   = 1;
         g474_last_seen = HAL_GetTick();
 
-        /* 推送数据到屏幕 */
+        /* 推送数据到屏幕 (暂时关闭) */
+#if 0
         Screen_SetVal("n0", status.dc_speed);
         Screen_SetVal("n1", status.step_speed);
         Screen_SetVal("n2", status.encoder_cnt);
@@ -118,6 +133,7 @@ void App_Run(void)
 
         /* CAN 连接状态显示 */
         Screen_SetText("t2", "G474 已连接");
+#endif
     }
 
     /*--- 500ms G474 断线检测 ---*/
@@ -125,8 +141,10 @@ void App_Run(void)
         lastTimeoutCheck = HAL_GetTick();
         if (g474_online && (HAL_GetTick() - g474_last_seen > 500)) {
             g474_online = 0;
+#if 0
             Screen_SetText("t2", "G474 断开");
             Screen_SetText("t1", "通信中断");
+#endif
         }
     }
 
@@ -135,5 +153,12 @@ void App_Run(void)
     mic_process();
 
 #endif /* CAN_ENABLE */
+
+    /*--- 摄像头帧处理 ---*/
+    if (camera_frame_ready) {
+        camera_frame_ready = 0;
+        Camera_DumpFrame();
+        Camera_RestartSnapshot();
+    }
 #endif /* APP_MODE */
 }
