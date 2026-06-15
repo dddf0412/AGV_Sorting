@@ -23,7 +23,7 @@
 #include "dma.h"
 #include "fdcan.h"
 #include "i2c.h"
-#include "i2s.h"
+#include "sai.h"
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
@@ -103,10 +103,10 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI1_Init();
   MX_USART3_UART_Init();
-  MX_I2S2_Init();
   MX_DCMI_Init();
   MX_DFSDM1_Init();
   MX_USART1_UART_Init();
+  MX_SAI1_Init();
   /* USER CODE BEGIN 2 */
   App_Init();
   /* USER CODE END 2 */
@@ -196,13 +196,13 @@ void PeriphCommonClock_Config(void)
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SAI1|RCC_PERIPHCLK_FDCAN
                               |RCC_PERIPHCLK_CKPER;
   PeriphClkInitStruct.PLL2.PLL2M = 2;
-  PeriphClkInitStruct.PLL2.PLL2N = 120;
+  PeriphClkInitStruct.PLL2.PLL2N = 122;
   PeriphClkInitStruct.PLL2.PLL2P = 20;
   PeriphClkInitStruct.PLL2.PLL2Q = 4;
   PeriphClkInitStruct.PLL2.PLL2R = 2;
   PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_2;
   PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
-  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+  PeriphClkInitStruct.PLL2.PLL2FRACN = 7210;
   PeriphClkInitStruct.CkperClockSelection = RCC_CLKPSOURCE_HSI;
   PeriphClkInitStruct.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLL2;
   PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL2;

@@ -60,10 +60,10 @@ void DMA1_Stream1_IRQHandler(void);
 void DMA1_Stream2_IRQHandler(void);
 void FDCAN1_IT0_IRQHandler(void);
 void FDCAN1_IT1_IRQHandler(void);
-void SPI2_IRQHandler(void);
 void USART1_IRQHandler(void);
 void USART3_IRQHandler(void);
 void DCMI_IRQHandler(void);
+void SAI1_IRQHandler(void);
 void DFSDM1_FLT0_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 

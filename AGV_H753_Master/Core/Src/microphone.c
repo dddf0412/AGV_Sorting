@@ -1,65 +1,109 @@
 #include "microphone.h"
-#include "main.h"   // 包含 stm32h7xx_hal.h，确保 DFSDM 句柄可见
+#include "main.h"
 
-/* 引用 CubeMX 生成的 DFSDM Filter 句柄（默认名，勿改） */
 extern DFSDM_Filter_HandleTypeDef hdfsdm1_filter0;
+extern UART_HandleTypeDef huart3;
 
-/* 内部双缓冲：DFSDM 寄存器为 32bit，DMA 按 Word 搬运 */
-static int32_t mic_buffer[MIC_BUFFER_SIZE * 2];
+static int32_t mic_raw[MIC_BUFFER_SIZE];
+static int16_t mic_out[MIC_CHUNK_SAMPLES];
 
-/* 小端模式下，int32_t 数组内存可直接按 int16_t 解析，低16位即有效音频数据 */
-static int16_t *mic_buf16 = (int16_t *)mic_buffer;
+static volatile uint8_t mic_half_ready;
+static volatile uint8_t mic_full_ready;
+static uint8_t      mic_stream_mode;
+static mic_callback_t mic_user_cb;
 
-static volatile uint8_t mic_half_ready = 0;
-static volatile uint8_t mic_full_ready = 0;
-static mic_callback_t   mic_user_cb    = NULL;
+/* ---------------- 协议帧发送 ---------------- */
 
-/* ---------------- HAL 弱定义回调覆盖 ---------------- */
+static void mic_send_chunk(int16_t *buf, uint16_t n)
+{
+    uint8_t hdr[12];
+    uint32_t dlen = n * 2;
+
+    hdr[0]  = 0xAA;
+    hdr[1]  = 0x55;
+    hdr[2]  = 2;                    /* type: 2 = PCM */
+    hdr[3]  = 1;                    /* channels: 1 */
+    hdr[4]  = 0x00; hdr[5] = 0x96; /* 38400 Hz */
+    hdr[6]  = 0x10; hdr[7] = 0x00; /* 16 bit */
+    hdr[8]  = (dlen >>  0) & 0xFF;
+    hdr[9]  = (dlen >>  8) & 0xFF;
+    hdr[10] = (dlen >> 16) & 0xFF;
+    hdr[11] = (dlen >> 24) & 0xFF;
+
+    HAL_UART_Transmit(&huart3, hdr, 12, 100);
+    HAL_UART_Transmit(&huart3, (uint8_t *)buf, dlen, 500);
+}
+
+/* ---------------- HAL 回调 ---------------- */
 
 void HAL_DFSDM_FilterRegConvHalfCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm_filter)
 {
-    if(hdfsdm_filter == &hdfsdm1_filter0)
+    if (hdfsdm_filter == &hdfsdm1_filter0)
         mic_half_ready = 1;
 }
 
 void HAL_DFSDM_FilterRegConvCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm_filter)
 {
-    if(hdfsdm_filter == &hdfsdm1_filter0)
+    if (hdfsdm_filter == &hdfsdm1_filter0)
         mic_full_ready = 1;
+}
+
+/* ---------------- 数据转换 ---------------- */
+
+static void mic_convert(int32_t *raw, int16_t *out, uint16_t offset, uint16_t n)
+{
+    for (uint16_t i = 0; i < n; i++)
+        out[i] = (int16_t)raw[offset + i];
 }
 
 /* ---------------- 对外接口 ---------------- */
 
-void mic_start(mic_callback_t cb)
+static void mic_start_dma(void)
 {
-    mic_user_cb    = cb;
     mic_half_ready = 0;
     mic_full_ready = 0;
-
     HAL_DFSDM_FilterRegularStart_DMA(&hdfsdm1_filter0,
-                                     mic_buffer,
-                                     MIC_BUFFER_SIZE * 2);
+                                     (int32_t *)mic_raw, MIC_BUFFER_SIZE);
+}
+
+void mic_start_monitor(mic_callback_t cb)
+{
+    mic_stream_mode = 0;
+    mic_user_cb    = cb;
+    mic_start_dma();
+}
+
+void mic_start_stream(void)
+{
+    mic_stream_mode = 1;
+    mic_user_cb    = NULL;
+    mic_start_dma();
 }
 
 void mic_process(void)
 {
-    if(mic_half_ready)
-    {
+    if (mic_half_ready) {
         mic_half_ready = 0;
-        if(mic_user_cb != NULL)
-            mic_user_cb(&mic_buf16[0], MIC_BUFFER_SIZE);
+        mic_convert(mic_raw, mic_out, MIC_BUFFER_SIZE / 2, MIC_CHUNK_SAMPLES);
+        if (mic_stream_mode)
+            mic_send_chunk(mic_out, MIC_CHUNK_SAMPLES);
+        else if (mic_user_cb)
+            mic_user_cb(mic_out, MIC_CHUNK_SAMPLES);
     }
 
-    if(mic_full_ready)
-    {
+    if (mic_full_ready) {
         mic_full_ready = 0;
-        if(mic_user_cb != NULL)
-            mic_user_cb(&mic_buf16[MIC_BUFFER_SIZE], MIC_BUFFER_SIZE);
+        mic_convert(mic_raw, mic_out, 0, MIC_CHUNK_SAMPLES);
+        if (mic_stream_mode)
+            mic_send_chunk(mic_out, MIC_CHUNK_SAMPLES);
+        else if (mic_user_cb)
+            mic_user_cb(mic_out, MIC_CHUNK_SAMPLES);
     }
 }
 
 void mic_stop(void)
 {
     HAL_DFSDM_FilterRegularStop_DMA(&hdfsdm1_filter0);
-    mic_user_cb = NULL;
+    mic_user_cb    = NULL;
+    mic_stream_mode = 0;
 }

@@ -8,12 +8,12 @@
 #include "microphone.h"
 #include "screen.h"
 #include "camera.h"
+/* #include "wm8960.h" */
 extern UART_HandleTypeDef huart1;
-extern I2C_HandleTypeDef hi2c1;
 #endif
 
 /*================ 调试开关 ================*/
-#define CAN_ENABLE  0  /* 1=启用CAN, 0=关闭CAN (仅调试摄像头时关) */
+#define CAN_ENABLE  0  /* 1=启用CAN, 0=关闭CAN */
 
 /*================ App_Init ================*/
 void App_Init(void)
@@ -31,33 +31,31 @@ void App_Init(void)
     printf("\r\n========== H753 Master Running ==========\r\n");
     Screen_Init(&huart1);
 
-#if 0  /* 暂时关闭屏幕数据显示 */
-    Screen_SendRaw("page main");
-    Screen_SetText("t1", "系统就绪");
+    if (Camera_Init() == CAMERA_OK)
+        Camera_Start();
+    else
+        printf("[App] Camera init failed!\r\n");
+
+#if 0
+    if (WM8960_Init() == WM8960_OK)
+        printf("[App] WM8960 ready\r\n");
+    else
+        printf("[App] WM8960 init failed!\r\n");
 #endif
 
-    /* 摄像头初始化 */
-    if (Camera_Init() == CAMERA_OK) {
-        Camera_Start();
-    } else {
-        printf("[App] Camera init failed!\r\n");
-    }
+    mic_start_stream();
+    printf("[App] Mic streaming (38.4kHz)\r\n");
 #endif
 }
 
 /*================ App_Run ================*/
 void App_Run(void)
 {
-    static uint32_t lastHeartbeat = 0;
-    static uint32_t lastDisplay   = 0;
-    static uint32_t lastTimeoutCheck = 0;
-    static uint8_t  g474_online = 0;
-    static uint32_t g474_last_seen = 0;
-    H753_StatusFrame_t status;
-
 #if (APP_MODE == 0)
-    /*==================== 模拟模式 ====================*/
+    /* 模拟模式 */
+    H753_StatusFrame_t status;
 #if CAN_ENABLE
+    static uint32_t lastHeartbeat = 0;
     if (HAL_GetTick() - lastHeartbeat >= 100) {
         lastHeartbeat = HAL_GetTick();
         H753_CAN_SendHeartbeat();
@@ -81,80 +79,39 @@ void App_Run(void)
                status.dc_speed, status.step_speed, status.encoder_cnt,
                status.sensor_left, status.sensor_right, status.sys_status);
     }
-#endif
+#endif /* CAN_ENABLE */
 
 #else
-    /*==================== 真实模式 ====================*/
-
-    /*--- 串口屏触摸处理 (暂时关闭) ---*/
-#if 0
-    Screen_Task();
-#endif
-
-    /*--- 每 1s 刷新屏幕显示 (暂时关闭) ---*/
-#if 0
-    if (HAL_GetTick() - lastDisplay >= 1000) {
-        lastDisplay = HAL_GetTick();
-        Screen_SetVal("n2", g474_online ? (int32_t)status.encoder_cnt : -1);
-    }
-#endif
+    /* 真实模式 */
+    H753_StatusFrame_t status;
+    static uint32_t lastHeartbeat = 0;
+    static uint32_t lastTimeoutCheck = 0;
+    static uint8_t  g474_online = 0;
+    static uint32_t g474_last_seen = 0;
 
 #if CAN_ENABLE
-    /*--- 每 100ms 心跳 ---*/
     if (HAL_GetTick() - lastHeartbeat >= 100) {
         lastHeartbeat = HAL_GetTick();
         H753_CAN_SendHeartbeat();
     }
 
-    /*--- 接收 G474 状态帧 ---*/
     if (H753_CAN_IsStatusFrameValid()) {
         H753_CAN_GetStatus(&status);
         H753_CAN_ClearStatusFlag();
-
-        g474_online   = 1;
-        g474_last_seen = HAL_GetTick();
-
-        /* 推送数据到屏幕 (暂时关闭) */
-#if 0
-        Screen_SetVal("n0", status.dc_speed);
-        Screen_SetVal("n1", status.step_speed);
-        Screen_SetVal("n2", status.encoder_cnt);
-        Screen_SetVal("n3", status.sensor_left);
-        Screen_SetVal("n4", status.sensor_right);
-
-        /* 系统状态文本 */
-        if (status.sys_status & 0x01) {
-            Screen_SetText("t1", "脱轨! 已停车");
-        } else if (status.sys_status & 0x02) {
-            Screen_SetText("t1", "通信超时");
-        } else {
-            Screen_SetText("t1", "运行中");
-        }
-
-        /* CAN 连接状态显示 */
-        Screen_SetText("t2", "G474 已连接");
-#endif
+        g474_online     = 1;
+        g474_last_seen  = HAL_GetTick();
     }
 
-    /*--- 500ms G474 断线检测 ---*/
     if (HAL_GetTick() - lastTimeoutCheck >= 500) {
         lastTimeoutCheck = HAL_GetTick();
-        if (g474_online && (HAL_GetTick() - g474_last_seen > 500)) {
+        if (g474_online && (HAL_GetTick() - g474_last_seen > 500))
             g474_online = 0;
-#if 0
-            Screen_SetText("t2", "G474 断开");
-            Screen_SetText("t1", "通信中断");
-#endif
-        }
     }
+#endif /* CAN_ENABLE */
 
-    /*--- NFC + 麦克风 ---*/
     NFC_Task();
     mic_process();
 
-#endif /* CAN_ENABLE */
-
-    /*--- 摄像头帧处理 ---*/
     if (camera_frame_ready) {
         camera_frame_ready = 0;
         Camera_DumpFrame();
