@@ -8,7 +8,7 @@
 #include "microphone.h"
 #include "screen.h"
 #include "camera.h"
-/* #include "wm8960.h" */
+#include "wm8960.h"
 extern UART_HandleTypeDef huart1;
 #endif
 
@@ -36,15 +36,11 @@ void App_Init(void)
     else
         printf("[App] Camera init failed!\r\n");
 
-#if 0
-    if (WM8960_Init() == WM8960_OK)
-        printf("[App] WM8960 ready\r\n");
-    else
-        printf("[App] WM8960 init failed!\r\n");
-#endif
-
     mic_start_stream();
     printf("[App] Mic streaming (38.4kHz)\r\n");
+
+    if (WM8960_Init() != 0)
+        printf("[App] WM8960 init failed!\r\n");
 #endif
 }
 
