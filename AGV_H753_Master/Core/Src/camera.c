@@ -1,5 +1,6 @@
 #include "camera.h"
 #include "dcmi.h"
+#include "i2c.h"
 #include "usart.h"
 #include <stdio.h>
 #include <string.h>
@@ -124,152 +125,21 @@ const uint8_t ov2640_set_jpeg_cfg[][2] = {
     {0xDA, 0x10}, {0xE0, 0x00},
 };
 
-/*================ SCCB 软件 I2C (仿参考代码位带操作) ================*/
+/*================ OV2640 寄存器读写 (硬件 I2C1, 与 WM8960 共享总线) ================*/
 
-static void sccb_delay(void)
-{
-    /* ~10us, SCCB 最大 400kHz 每周期 2.5us, 留足余量 */
-    for (volatile uint32_t d = 0; d < 4800; d++) { __NOP(); }
-}
-
-static void sccb_set_sda_output(void)
-{
-    GPIO_InitTypeDef g = {0};
-    g.Pin   = SCCB_SDA_PIN;
-    g.Mode  = GPIO_MODE_OUTPUT_OD;
-    g.Pull  = GPIO_PULLUP;
-    g.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(SCCB_SDA_PORT, &g);
-}
-
-static void sccb_set_sda_input(void)
-{
-    GPIO_InitTypeDef g = {0};
-    g.Pin   = SCCB_SDA_PIN;
-    g.Mode  = GPIO_MODE_INPUT;
-    g.Pull  = GPIO_PULLUP;
-    g.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(SCCB_SDA_PORT, &g);
-}
-
-static void sccb_start(void)
-{
-    SCCB_SDA(1);
-    SCCB_SCL(1);
-    sccb_delay();
-    SCCB_SDA(0);
-    sccb_delay();
-    SCCB_SCL(0);
-}
-
-static void sccb_stop(void)
-{
-    SCCB_SDA(0);
-    sccb_delay();
-    SCCB_SCL(1);
-    sccb_delay();
-    SCCB_SDA(1);
-    sccb_delay();
-}
-
-static void sccb_write_byte(uint8_t dat)
-{
-    for (int8_t i = 7; i >= 0; i--) {
-        SCCB_SDA((dat >> i) & 0x01);
-        sccb_delay();
-        SCCB_SCL(1);
-        sccb_delay();
-        SCCB_SCL(0);
-    }
-    /* 释放 SDA 读 ACK / NA */
-    SCCB_SDA(1);
-    sccb_delay();
-    SCCB_SCL(1);
-    sccb_delay();
-    SCCB_SCL(0);
-}
-
-static void sccb_read_byte(uint8_t *dat)
-{
-    uint8_t val = 0;
-    sccb_set_sda_input();
-    for (int8_t i = 7; i >= 0; i--) {
-        sccb_delay();
-        SCCB_SCL(1);
-        if (SCCB_READ_SDA()) val |= (1 << i);
-        sccb_delay();
-        SCCB_SCL(0);
-    }
-    sccb_set_sda_output();
-    /* NA 位 (SCCB 读完成后发 0=NA) */
-    sccb_delay();
-    SCCB_SCL(1);
-    sccb_delay();
-    SCCB_SCL(0);
-    SCCB_SDA(0);
-    sccb_delay();
-    *dat = val;
-}
-
-static void sccb_3_phase_write(uint8_t id_addr, uint8_t sub_addr, uint8_t dat)
-{
-    sccb_start();
-    sccb_write_byte(id_addr);
-    sccb_write_byte(sub_addr);
-    sccb_write_byte(dat);
-    sccb_stop();
-}
-
-static void sccb_2_phase_write(uint8_t id_addr, uint8_t sub_addr)
-{
-    sccb_start();
-    sccb_write_byte(id_addr);
-    sccb_write_byte(sub_addr);
-    sccb_stop();
-}
-
-static void sccb_2_phase_read(uint8_t id_addr, uint8_t *dat)
-{
-    sccb_start();
-    sccb_write_byte(id_addr | 0x01);  /* 读命令: bit0=1 */
-    sccb_read_byte(dat);
-    sccb_stop();
-}
-
-static void sccb_init(void)
-{
-    GPIO_InitTypeDef g = {0};
-
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    g.Pin   = SCCB_SCL_PIN;
-    g.Mode  = GPIO_MODE_OUTPUT_OD;
-    g.Pull  = GPIO_PULLUP;
-    g.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(SCCB_SCL_PORT, &g);
-
-    g.Pin   = SCCB_SDA_PIN;
-    HAL_GPIO_Init(SCCB_SDA_PORT, &g);
-
-    /* 总线释放 */
-    SCCB_SCL(1);
-    SCCB_SDA(1);
-    sccb_delay();
-    sccb_stop();
-}
-
-/*================ OV2640 寄存器读写 (通过 SCCB) ================*/
+extern I2C_HandleTypeDef hi2c1;
 
 static void ov2640_write_reg(uint8_t reg, uint8_t dat)
 {
-    sccb_3_phase_write(OV2640_SCCB_ADDR, reg, dat);
+    HAL_I2C_Mem_Write(&hi2c1, OV2640_ADDR << 1, reg,
+                      I2C_MEMADD_SIZE_8BIT, &dat, 1, 10);
 }
 
 static uint8_t ov2640_read_reg(uint8_t reg)
 {
     uint8_t dat = 0;
-    sccb_2_phase_write(OV2640_SCCB_ADDR, reg);
-    sccb_2_phase_read(OV2640_SCCB_ADDR, &dat);
+    HAL_I2C_Mem_Read(&hi2c1, OV2640_ADDR << 1, reg,
+                     I2C_MEMADD_SIZE_8BIT, &dat, 1, 10);
     return dat;
 }
 
@@ -430,7 +300,7 @@ int Camera_Init(void)
     uint16_t w, h;
 
     ov2640_hw_reset();
-    sccb_init();
+    /* I2C1 已在 main.c 中由 MX_I2C1_Init 初始化 */
     ov2640_sw_reset();
 
     if (ov2640_verify_id() != CAMERA_OK) {

@@ -10,17 +10,8 @@ extern "C" {
 /*================ 引脚 (CubeMX 定义于 main.h) ================*/
 #define CAMERA_RST(x)     HAL_GPIO_WritePin(CAM_RST_GPIO_Port, CAM_RST_Pin, (x) ? GPIO_PIN_SET : GPIO_PIN_RESET)
 
-/* SCCB 软件 I2C 引脚 (与 I2C1 共用 PB6/PB7) */
-#define SCCB_SCL_PIN      GPIO_PIN_6
-#define SCCB_SCL_PORT     GPIOB
-#define SCCB_SDA_PIN      GPIO_PIN_7
-#define SCCB_SDA_PORT     GPIOB
-#define SCCB_SCL(x)       HAL_GPIO_WritePin(SCCB_SCL_PORT, SCCB_SCL_PIN, (x) ? GPIO_PIN_SET : GPIO_PIN_RESET)
-#define SCCB_SDA(x)       HAL_GPIO_WritePin(SCCB_SDA_PORT, SCCB_SDA_PIN, (x) ? GPIO_PIN_SET : GPIO_PIN_RESET)
-#define SCCB_READ_SDA()   HAL_GPIO_ReadPin(SCCB_SDA_PORT, SCCB_SDA_PIN)
-
-/* OV2640 SCCB 地址 */
-#define OV2640_SCCB_ADDR  0x60
+/* OV2640 7-bit I2C 地址 (I2C1, 与 WM8960 共享总线) */
+#define OV2640_ADDR  0x60
 
 /*================ 状态返回值 ================*/
 #define CAMERA_OK      0
