@@ -8,6 +8,7 @@
 #define CAN_ID_AGV_CMD      0x201
 #define CAN_ID_CONVEYOR_CMD 0x202
 #define CAN_ID_SERVO_CMD    0x203
+#define CAN_ID_UNLOCK       0x204
 #define CAN_ID_HEARTBEAT    0x2FF
 #define CAN_ID_STATUS       0x301
 
