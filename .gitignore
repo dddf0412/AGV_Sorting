@@ -42,3 +42,7 @@ Desktop.ini
 tmp/
 temp/
 training/data/
+training/spectrograms.pt
+training/kws_model_ds_cnn_s.onnx
+training/kws_model_se_ds_cnn.onnx
+.claude/
