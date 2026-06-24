@@ -1,0 +1,447 @@
+ST Edge AI Core v2.2.0-20266 2adc00962
+Created date          : 2026-06-24 23:22:55
+Parameters            : generate --target stm32h7 --name kws -m D:/STM32CubeIDE_2.1.1/workplace/training/kws_model_tc_resnet8.onnx --compression none --verbosity 1 --workspace C:/Users/86138/AppData/Local/Temp/mxAI_workspace557571906847004807670108087442748 --output C:/Users/86138/.stm32cubemx/kws_output
+
+Exec/report summary (generate)
+-----------------------------------------------------------------------------------------------------------
+model file         :   D:\STM32CubeIDE_2.1.1\workplace\training\kws_model_tc_resnet8.onnx                  
+type               :   onnx                                                                                
+c_name             :   kws                                                                                 
+compression        :   none                                                                                
+options            :   allocate-inputs, allocate-outputs                                                   
+optimization       :   balanced                                                                            
+target/series      :   stm32h7                                                                             
+workspace dir      :   C:\Users\86138\AppData\Local\Temp\mxAI_workspace557571906847004807670108087442748   
+output dir         :   C:\Users\86138\.stm32cubemx\kws_output                                              
+model_fmt          :   float                                                                               
+model_name         :   kws_model_tc_resnet8                                                                
+model_hash         :   0xbc5be5bc96841457e5101c5040679170                                                  
+params #           :   29,106 items (113.70 KiB)                                                           
+-----------------------------------------------------------------------------------------------------------
+input 1/1          :   'input', f32(1x49x40), 7.66 KBytes, activations                                     
+output 1/1         :   'output', f32(1x10), 40 Bytes, activations                                          
+macc               :   673,850                                                                             
+weights (ro)       :   116,840 B (114.10 KiB) (1 segment) / +416(+0.4%) vs float model                     
+activations (rw)   :   10,208 B (9.97 KiB) (1 segment) *                                                   
+ram (total)        :   10,208 B (9.97 KiB) = 10,208 + 0 + 0                                                
+-----------------------------------------------------------------------------------------------------------
+(*) 'input'/'output' buffers are allocated in the activations buffer
+
+Model name - kws_model_tc_resnet8
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+m_id   layer (type,original)                                   oshape            param/size         macc                  connected to   | c_size         c_macc          c_type              
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+30     fc_weight (Placeholder, Gemm)                           [b:10,c:48]       480/1,920                                               | +40(+2.1%)     +490(+100.0%)   Dense_[o][27]       
+       fc_bias (Placeholder, Gemm)                             [b:10]            10/40                                                   | -40(-100.0%)                   
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+0      input (Input, )                                         [b:1,h:49,c:40]                                                           |                                
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+1      _Transpose_output_0 (Transpose, Transpose)              [b:1,h:49,c:40]                       980                         input   |                -980(-100.0%)   
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+2      _conv1_Conv_output_0 (Conv2D, Conv)                     [b:1,h:49,c:16]   1,936/7,744      94,096           _Transpose_output_0   |                                Conv2D_[0]          
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+3      _Relu_output_0 (Nonlinearity, Relu)                     [b:1,h:49,c:16]                       784          _conv1_Conv_output_0   |                                Nonlinearity_[1]    
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+4      _b1_skip_Conv_output_0 (Conv2D, Conv)                   [b:1,h:49,c:24]   384/1,536        18,816                _Relu_output_0   | +96(+6.2%)     +24(+0.1%)      Conv2D_[7]          
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+5      _b1_conv1_Conv_output_0 (Conv2D, Conv)                  [b:1,h:49,c:24]   1,176/4,704      56,472                _Relu_output_0   |                                Conv2D_[2]          
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+6      _Relu_1_output_0 (Nonlinearity, Relu)                   [b:1,h:49,c:24]                     1,176       _b1_conv1_Conv_output_0   |                                Nonlinearity_[3]    
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+7      _b1_conv2_Conv_output_0 (Conv2D, Conv)                  [b:1,h:49,c:24]   1,752/7,008      84,696              _Relu_1_output_0   |                                Conv2D_[4]          
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+8      _Relu_2_output_0 (Nonlinearity, Relu)                   [b:1,h:49,c:24]                     1,176       _b1_conv2_Conv_output_0   |                                Nonlinearity_[5]    
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+9      _b1_conv3_Conv_output_0 (Conv2D, Conv)                  [b:1,h:49,c:24]   600/2,400        28,248              _Relu_2_output_0   |                                Conv2D_[6]          
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+10     _Add_output_0 (Eltwise, Add)                            [b:1,h:49,c:24]                     1,176       _b1_conv3_Conv_output_0   |                                Eltwise/add_[8]     
+                                                                                                                _b1_skip_Conv_output_0   | 
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+11     _Relu_3_output_0 (Nonlinearity, Relu)                   [b:1,h:49,c:24]                     1,176                 _Add_output_0   |                                Nonlinearity_[9]    
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+12     _b2_skip_Conv_output_0 (Conv2D, Conv)                   [b:1,h:25,c:32]   768/3,072        19,200              _Relu_3_output_0   | +128(+4.2%)    +32(+0.2%)      Conv2D_[15]         
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+13     _b2_conv1_Conv_output_0 (Conv2D, Conv)                  [b:1,h:25,c:32]   2,336/9,344      57,632              _Relu_3_output_0   |                                Conv2D_[10]         
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+14     _Relu_4_output_0 (Nonlinearity, Relu)                   [b:1,h:25,c:32]                       800       _b2_conv1_Conv_output_0   |                                Nonlinearity_[11]   
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+15     _b2_conv2_Conv_output_0 (Conv2D, Conv)                  [b:1,h:25,c:32]   3,104/12,416     76,832              _Relu_4_output_0   |                                Conv2D_[12]         
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+16     _Relu_5_output_0 (Nonlinearity, Relu)                   [b:1,h:25,c:32]                       800       _b2_conv2_Conv_output_0   |                                Nonlinearity_[13]   
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+17     _b2_conv3_Conv_output_0 (Conv2D, Conv)                  [b:1,h:25,c:32]   1,056/4,224      25,632              _Relu_5_output_0   |                                Conv2D_[14]         
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+18     _Add_1_output_0 (Eltwise, Add)                          [b:1,h:25,c:32]                       800       _b2_conv3_Conv_output_0   |                                Eltwise/add_[16]    
+                                                                                                                _b2_skip_Conv_output_0   | 
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+19     _Relu_6_output_0 (Nonlinearity, Relu)                   [b:1,h:25,c:32]                       800               _Add_1_output_0   |                                Nonlinearity_[17]   
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+20     _b3_skip_Conv_output_0 (Conv2D, Conv)                   [b:1,h:13,c:48]   1,536/6,144      19,968              _Relu_6_output_0   | +192(+3.1%)    +48(+0.2%)      Conv2D_[23]         
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+21     _b3_conv1_Conv_output_0 (Conv2D, Conv)                  [b:1,h:13,c:48]   4,656/18,624     59,952              _Relu_6_output_0   |                                Conv2D_[18]         
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+22     _Relu_7_output_0 (Nonlinearity, Relu)                   [b:1,h:13,c:48]                       624       _b3_conv1_Conv_output_0   |                                Nonlinearity_[19]   
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+23     _b3_conv2_Conv_output_0 (Conv2D, Conv)                  [b:1,h:13,c:48]   6,960/27,840     89,904              _Relu_7_output_0   |                                Conv2D_[20]         
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+24     _Relu_8_output_0 (Nonlinearity, Relu)                   [b:1,h:13,c:48]                       624       _b3_conv2_Conv_output_0   |                                Nonlinearity_[21]   
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+25     _b3_conv3_Conv_output_0 (Conv2D, Conv)                  [b:1,h:13,c:48]   2,352/9,408      30,000              _Relu_8_output_0   |                                Conv2D_[22]         
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+26     _Add_2_output_0 (Eltwise, Add)                          [b:1,h:13,c:48]                       624       _b3_conv3_Conv_output_0   |                                Eltwise/add_[24]    
+                                                                                                                _b3_skip_Conv_output_0   | 
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+27     _Relu_9_output_0 (Nonlinearity, Relu)                   [b:1,h:13,c:48]                       624               _Add_2_output_0   |                                Nonlinearity_[25]   
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+28     _GlobalAveragePool_output_0 (Pool, GlobalAveragePool)   [b:1,h:1,c:48]                        624              _Relu_9_output_0   |                                Pool_[26]           
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+29     _Squeeze_output_0 (Reshape, Squeeze)                    [b:1,c:48]                                  _GlobalAveragePool_output_0   |                                
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+30     output (Gemm, Gemm)                                     [b:1,c:10]                            490             _Squeeze_output_0   |                -490(-100.0%)   
+                                                                                                                             fc_weight   | 
+                                                                                                                               fc_bias   | 
+------ ------------------------------------------------------- ----------------- -------------- -------- ----------------------------- --- -------------- --------------- ------------------- 
+model/c-model: macc=674,726/673,850 -876(-0.1%) weights=116,424/116,840 +416(+0.4%) activations=--/10,208 io=--/0
+
+
+
+Generated C-graph summary
+------------------------------------------------------------------------------------------------------------------------
+model name            : kws_model_tc_resnet8
+c-name                : kws
+c-node #              : 28
+c-array #             : 70
+activations size      : 10208 (1 segment)
+weights size          : 116840 (1 segment)
+macc                  : 673850
+inputs                : ['input_output']
+outputs               : ['output_output']
+
+C-Arrays (70)
+------ ------------------------------------ ------------ ------------------------- ------------- --------- 
+c_id   name (*_array)                       item/size    domain/mem-pool           c-type        comment   
+------ ------------------------------------ ------------ ------------------------- ------------- --------- 
+0      _Add_1_output_0_output               800/3200     activations/**default**   float                   
+1      _Add_2_output_0_output               624/2496     activations/**default**   float                   
+2      _Add_output_0_output                 1176/4704    activations/**default**   float                   
+3      _GlobalAveragePool_output_0_output   48/192       activations/**default**   float                   
+4      _Relu_1_output_0_output              1176/4704    activations/**default**   float                   
+5      _Relu_2_output_0_output              1176/4704    activations/**default**   float                   
+6      _Relu_3_output_0_output              1176/4704    activations/**default**   float                   
+7      _Relu_4_output_0_output              800/3200     activations/**default**   float                   
+8      _Relu_5_output_0_output              800/3200     activations/**default**   float                   
+9      _Relu_6_output_0_output              800/3200     activations/**default**   float                   
+10     _Relu_7_output_0_output              624/2496     activations/**default**   float                   
+11     _Relu_8_output_0_output              624/2496     activations/**default**   float                   
+12     _Relu_9_output_0_output              624/2496     activations/**default**   float                   
+13     _Relu_output_0_output                784/3136     activations/**default**   float                   
+14     _b1_conv1_Conv_output_0_bias         24/96        weights/weights           const float             
+15     _b1_conv1_Conv_output_0_output       1176/4704    activations/**default**   float                   
+16     _b1_conv1_Conv_output_0_scratch0     48/192       activations/**default**   float                   
+17     _b1_conv1_Conv_output_0_weights      1152/4608    weights/weights           const float             
+18     _b1_conv2_Conv_output_0_bias         24/96        weights/weights           const float             
+19     _b1_conv2_Conv_output_0_output       1176/4704    activations/**default**   float                   
+20     _b1_conv2_Conv_output_0_scratch0     72/288       activations/**default**   float                   
+21     _b1_conv2_Conv_output_0_weights      1728/6912    weights/weights           const float             
+22     _b1_conv3_Conv_output_0_bias         24/96        weights/weights           const float             
+23     _b1_conv3_Conv_output_0_output       1176/4704    activations/**default**   float                   
+24     _b1_conv3_Conv_output_0_scratch0     24/96        activations/**default**   float                   
+25     _b1_conv3_Conv_output_0_weights      576/2304     weights/weights           const float             
+26     _b1_skip_Conv_output_0_bias          24/96        weights/weights           const float             
+27     _b1_skip_Conv_output_0_output        1176/4704    activations/**default**   float                   
+28     _b1_skip_Conv_output_0_scratch0      16/64        activations/**default**   float                   
+29     _b1_skip_Conv_output_0_weights       384/1536     weights/weights           const float             
+30     _b2_conv1_Conv_output_0_bias         32/128       weights/weights           const float             
+31     _b2_conv1_Conv_output_0_output       800/3200     activations/**default**   float                   
+32     _b2_conv1_Conv_output_0_scratch0     72/288       activations/**default**   float                   
+33     _b2_conv1_Conv_output_0_weights      2304/9216    weights/weights           const float             
+34     _b2_conv2_Conv_output_0_bias         32/128       weights/weights           const float             
+35     _b2_conv2_Conv_output_0_output       800/3200     activations/**default**   float                   
+36     _b2_conv2_Conv_output_0_scratch0     96/384       activations/**default**   float                   
+37     _b2_conv2_Conv_output_0_weights      3072/12288   weights/weights           const float             
+38     _b2_conv3_Conv_output_0_bias         32/128       weights/weights           const float             
+39     _b2_conv3_Conv_output_0_output       800/3200     activations/**default**   float                   
+40     _b2_conv3_Conv_output_0_scratch0     32/128       activations/**default**   float                   
+41     _b2_conv3_Conv_output_0_weights      1024/4096    weights/weights           const float             
+42     _b2_skip_Conv_output_0_bias          32/128       weights/weights           const float             
+43     _b2_skip_Conv_output_0_output        800/3200     activations/**default**   float                   
+44     _b2_skip_Conv_output_0_scratch0      24/96        activations/**default**   float                   
+45     _b2_skip_Conv_output_0_weights       768/3072     weights/weights           const float             
+46     _b3_conv1_Conv_output_0_bias         48/192       weights/weights           const float             
+47     _b3_conv1_Conv_output_0_output       624/2496     activations/**default**   float                   
+48     _b3_conv1_Conv_output_0_scratch0     96/384       activations/**default**   float                   
+49     _b3_conv1_Conv_output_0_weights      4608/18432   weights/weights           const float             
+50     _b3_conv2_Conv_output_0_bias         48/192       weights/weights           const float             
+51     _b3_conv2_Conv_output_0_output       624/2496     activations/**default**   float                   
+52     _b3_conv2_Conv_output_0_scratch0     144/576      activations/**default**   float                   
+53     _b3_conv2_Conv_output_0_weights      6912/27648   weights/weights           const float             
+54     _b3_conv3_Conv_output_0_bias         48/192       weights/weights           const float             
+55     _b3_conv3_Conv_output_0_output       624/2496     activations/**default**   float                   
+56     _b3_conv3_Conv_output_0_scratch0     48/192       activations/**default**   float                   
+57     _b3_conv3_Conv_output_0_weights      2304/9216    weights/weights           const float             
+58     _b3_skip_Conv_output_0_bias          48/192       weights/weights           const float             
+59     _b3_skip_Conv_output_0_output        624/2496     activations/**default**   float                   
+60     _b3_skip_Conv_output_0_scratch0      32/128       activations/**default**   float                   
+61     _b3_skip_Conv_output_0_weights       1536/6144    weights/weights           const float             
+62     _conv1_Conv_output_0_bias            16/64        weights/weights           const float             
+63     _conv1_Conv_output_0_output          784/3136     activations/**default**   float                   
+64     _conv1_Conv_output_0_scratch0        120/480      activations/**default**   float                   
+65     _conv1_Conv_output_0_weights         1920/7680    weights/weights           const float             
+66     input_output                         1960/7840    activations/**default**   float         /input    
+67     output_bias                          10/40        weights/weights           const float             
+68     output_output                        10/40        activations/**default**   float         /output   
+69     output_weights                       480/1920     weights/weights           const float             
+------ ------------------------------------ ------------ ------------------------- ------------- --------- 
+
+C-Layers (28)
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+c_id   name (*_layer)                id   layer_type      macc    rom     tensors                                 shape (array id)      
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+0      _conv1_Conv_output_0          2    Conv2D          94096   7744    I: input_output                         f32(1x49x40) (66)     
+                                                                          S: _conv1_Conv_output_0_scratch0                              
+                                                                          W: _conv1_Conv_output_0_weights         f32(16x3x1x40) (65)   
+                                                                          W: _conv1_Conv_output_0_bias            f32(16) (62)          
+                                                                          O: _conv1_Conv_output_0_output          f32(1x49x16) (63)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+1      _Relu_output_0                3    Nonlinearity    784     0       I: _conv1_Conv_output_0_output          f32(1x49x16) (63)     
+                                                                          O: _Relu_output_0_output                f32(1x49x16) (13)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+2      _b1_conv1_Conv_output_0       5    Conv2D          56472   4704    I: _Relu_output_0_output                f32(1x49x16) (13)     
+                                                                          S: _b1_conv1_Conv_output_0_scratch0                           
+                                                                          W: _b1_conv1_Conv_output_0_weights      f32(24x3x1x16) (17)   
+                                                                          W: _b1_conv1_Conv_output_0_bias         f32(24) (14)          
+                                                                          O: _b1_conv1_Conv_output_0_output       f32(1x49x24) (15)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+3      _Relu_1_output_0              6    Nonlinearity    1176    0       I: _b1_conv1_Conv_output_0_output       f32(1x49x24) (15)     
+                                                                          O: _Relu_1_output_0_output              f32(1x49x24) (4)      
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+4      _b1_conv2_Conv_output_0       7    Conv2D          84696   7008    I: _Relu_1_output_0_output              f32(1x49x24) (4)      
+                                                                          S: _b1_conv2_Conv_output_0_scratch0                           
+                                                                          W: _b1_conv2_Conv_output_0_weights      f32(24x3x1x24) (21)   
+                                                                          W: _b1_conv2_Conv_output_0_bias         f32(24) (18)          
+                                                                          O: _b1_conv2_Conv_output_0_output       f32(1x49x24) (19)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+5      _Relu_2_output_0              8    Nonlinearity    1176    0       I: _b1_conv2_Conv_output_0_output       f32(1x49x24) (19)     
+                                                                          O: _Relu_2_output_0_output              f32(1x49x24) (5)      
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+6      _b1_conv3_Conv_output_0       9    Conv2D          28248   2400    I: _Relu_2_output_0_output              f32(1x49x24) (5)      
+                                                                          S: _b1_conv3_Conv_output_0_scratch0                           
+                                                                          W: _b1_conv3_Conv_output_0_weights      f32(24x1x1x24) (25)   
+                                                                          W: _b1_conv3_Conv_output_0_bias         f32(24) (22)          
+                                                                          O: _b1_conv3_Conv_output_0_output       f32(1x49x24) (23)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+7      _b1_skip_Conv_output_0        4    Conv2D          18840   1632    I: _Relu_output_0_output                f32(1x49x16) (13)     
+                                                                          S: _b1_skip_Conv_output_0_scratch0                            
+                                                                          W: _b1_skip_Conv_output_0_weights       f32(24x1x1x16) (29)   
+                                                                          W: _b1_skip_Conv_output_0_bias          f32(24) (26)          
+                                                                          O: _b1_skip_Conv_output_0_output        f32(1x49x24) (27)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+8      _Add_output_0                 10   Eltwise/add     1176    0       I: _b1_conv3_Conv_output_0_output       f32(1x49x24) (23)     
+                                                                          I: _b1_skip_Conv_output_0_output        f32(1x49x24) (23)     
+                                                                          O: _Add_output_0_output                 f32(1x49x24) (2)      
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+9      _Relu_3_output_0              11   Nonlinearity    1176    0       I: _Add_output_0_output                 f32(1x49x24) (2)      
+                                                                          O: _Relu_3_output_0_output              f32(1x49x24) (6)      
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+10     _b2_conv1_Conv_output_0       13   Conv2D          57632   9344    I: _Relu_3_output_0_output              f32(1x49x24) (6)      
+                                                                          S: _b2_conv1_Conv_output_0_scratch0                           
+                                                                          W: _b2_conv1_Conv_output_0_weights      f32(32x3x1x24) (33)   
+                                                                          W: _b2_conv1_Conv_output_0_bias         f32(32) (30)          
+                                                                          O: _b2_conv1_Conv_output_0_output       f32(1x25x32) (31)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+11     _Relu_4_output_0              14   Nonlinearity    800     0       I: _b2_conv1_Conv_output_0_output       f32(1x25x32) (31)     
+                                                                          O: _Relu_4_output_0_output              f32(1x25x32) (7)      
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+12     _b2_conv2_Conv_output_0       15   Conv2D          76832   12416   I: _Relu_4_output_0_output              f32(1x25x32) (7)      
+                                                                          S: _b2_conv2_Conv_output_0_scratch0                           
+                                                                          W: _b2_conv2_Conv_output_0_weights      f32(32x3x1x32) (37)   
+                                                                          W: _b2_conv2_Conv_output_0_bias         f32(32) (34)          
+                                                                          O: _b2_conv2_Conv_output_0_output       f32(1x25x32) (35)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+13     _Relu_5_output_0              16   Nonlinearity    800     0       I: _b2_conv2_Conv_output_0_output       f32(1x25x32) (35)     
+                                                                          O: _Relu_5_output_0_output              f32(1x25x32) (8)      
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+14     _b2_conv3_Conv_output_0       17   Conv2D          25632   4224    I: _Relu_5_output_0_output              f32(1x25x32) (8)      
+                                                                          S: _b2_conv3_Conv_output_0_scratch0                           
+                                                                          W: _b2_conv3_Conv_output_0_weights      f32(32x1x1x32) (41)   
+                                                                          W: _b2_conv3_Conv_output_0_bias         f32(32) (38)          
+                                                                          O: _b2_conv3_Conv_output_0_output       f32(1x25x32) (39)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+15     _b2_skip_Conv_output_0        12   Conv2D          19232   3200    I: _Relu_3_output_0_output              f32(1x49x24) (6)      
+                                                                          S: _b2_skip_Conv_output_0_scratch0                            
+                                                                          W: _b2_skip_Conv_output_0_weights       f32(32x1x1x24) (45)   
+                                                                          W: _b2_skip_Conv_output_0_bias          f32(32) (42)          
+                                                                          O: _b2_skip_Conv_output_0_output        f32(1x25x32) (43)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+16     _Add_1_output_0               18   Eltwise/add     800     0       I: _b2_conv3_Conv_output_0_output       f32(1x25x32) (39)     
+                                                                          I: _b2_skip_Conv_output_0_output        f32(1x25x32) (39)     
+                                                                          O: _Add_1_output_0_output               f32(1x25x32) (0)      
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+17     _Relu_6_output_0              19   Nonlinearity    800     0       I: _Add_1_output_0_output               f32(1x25x32) (0)      
+                                                                          O: _Relu_6_output_0_output              f32(1x25x32) (9)      
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+18     _b3_conv1_Conv_output_0       21   Conv2D          59952   18624   I: _Relu_6_output_0_output              f32(1x25x32) (9)      
+                                                                          S: _b3_conv1_Conv_output_0_scratch0                           
+                                                                          W: _b3_conv1_Conv_output_0_weights      f32(48x3x1x32) (49)   
+                                                                          W: _b3_conv1_Conv_output_0_bias         f32(48) (46)          
+                                                                          O: _b3_conv1_Conv_output_0_output       f32(1x13x48) (47)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+19     _Relu_7_output_0              22   Nonlinearity    624     0       I: _b3_conv1_Conv_output_0_output       f32(1x13x48) (47)     
+                                                                          O: _Relu_7_output_0_output              f32(1x13x48) (10)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+20     _b3_conv2_Conv_output_0       23   Conv2D          89904   27840   I: _Relu_7_output_0_output              f32(1x13x48) (10)     
+                                                                          S: _b3_conv2_Conv_output_0_scratch0                           
+                                                                          W: _b3_conv2_Conv_output_0_weights      f32(48x3x1x48) (53)   
+                                                                          W: _b3_conv2_Conv_output_0_bias         f32(48) (50)          
+                                                                          O: _b3_conv2_Conv_output_0_output       f32(1x13x48) (51)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+21     _Relu_8_output_0              24   Nonlinearity    624     0       I: _b3_conv2_Conv_output_0_output       f32(1x13x48) (51)     
+                                                                          O: _Relu_8_output_0_output              f32(1x13x48) (11)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+22     _b3_conv3_Conv_output_0       25   Conv2D          30000   9408    I: _Relu_8_output_0_output              f32(1x13x48) (11)     
+                                                                          S: _b3_conv3_Conv_output_0_scratch0                           
+                                                                          W: _b3_conv3_Conv_output_0_weights      f32(48x1x1x48) (57)   
+                                                                          W: _b3_conv3_Conv_output_0_bias         f32(48) (54)          
+                                                                          O: _b3_conv3_Conv_output_0_output       f32(1x13x48) (55)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+23     _b3_skip_Conv_output_0        20   Conv2D          20016   6336    I: _Relu_6_output_0_output              f32(1x25x32) (9)      
+                                                                          S: _b3_skip_Conv_output_0_scratch0                            
+                                                                          W: _b3_skip_Conv_output_0_weights       f32(48x1x1x32) (61)   
+                                                                          W: _b3_skip_Conv_output_0_bias          f32(48) (58)          
+                                                                          O: _b3_skip_Conv_output_0_output        f32(1x13x48) (59)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+24     _Add_2_output_0               26   Eltwise/add     624     0       I: _b3_conv3_Conv_output_0_output       f32(1x13x48) (55)     
+                                                                          I: _b3_skip_Conv_output_0_output        f32(1x13x48) (55)     
+                                                                          O: _Add_2_output_0_output               f32(1x13x48) (1)      
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+25     _Relu_9_output_0              27   Nonlinearity    624     0       I: _Add_2_output_0_output               f32(1x13x48) (1)      
+                                                                          O: _Relu_9_output_0_output              f32(1x13x48) (12)     
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+26     _GlobalAveragePool_output_0   28   Pool            624     0       I: _Relu_9_output_0_output              f32(1x13x48) (12)     
+                                                                          O: _GlobalAveragePool_output_0_output   f32(1x1x48) (3)       
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+27     output                        30   Dense           490     1960    I: _GlobalAveragePool_output_0_output   f32(1x1x48) (3)       
+                                                                          W: output_weights                       f32(10x48) (69)       
+                                                                          W: output_bias                          f32(10) (67)          
+                                                                          O: output_output                        f32(1x10) (68)        
+------ ----------------------------- ---- --------------- ------- ------- --------------------------------------- --------------------- 
+
+
+
+Number of operations per c-layer
+------- ------ ------------------------------------ --------- -------------- 
+c_id    m_id   name (type)                                #op           type 
+------- ------ ------------------------------------ --------- -------------- 
+0       2      _conv1_Conv_output_0 (Conv2D)           94,096   smul_f32_f32 
+1       3      _Relu_output_0 (Nonlinearity)              784     op_f32_f32 
+2       5      _b1_conv1_Conv_output_0 (Conv2D)        56,472   smul_f32_f32 
+3       6      _Relu_1_output_0 (Nonlinearity)          1,176     op_f32_f32 
+4       7      _b1_conv2_Conv_output_0 (Conv2D)        84,696   smul_f32_f32 
+5       8      _Relu_2_output_0 (Nonlinearity)          1,176     op_f32_f32 
+6       9      _b1_conv3_Conv_output_0 (Conv2D)        28,248   smul_f32_f32 
+7       4      _b1_skip_Conv_output_0 (Conv2D)         18,840   smul_f32_f32 
+8       10     _Add_output_0 (Eltwise/add)              1,176     op_f32_f32 
+9       11     _Relu_3_output_0 (Nonlinearity)          1,176     op_f32_f32 
+10      13     _b2_conv1_Conv_output_0 (Conv2D)        57,632   smul_f32_f32 
+11      14     _Relu_4_output_0 (Nonlinearity)            800     op_f32_f32 
+12      15     _b2_conv2_Conv_output_0 (Conv2D)        76,832   smul_f32_f32 
+13      16     _Relu_5_output_0 (Nonlinearity)            800     op_f32_f32 
+14      17     _b2_conv3_Conv_output_0 (Conv2D)        25,632   smul_f32_f32 
+15      12     _b2_skip_Conv_output_0 (Conv2D)         19,232   smul_f32_f32 
+16      18     _Add_1_output_0 (Eltwise/add)              800     op_f32_f32 
+17      19     _Relu_6_output_0 (Nonlinearity)            800     op_f32_f32 
+18      21     _b3_conv1_Conv_output_0 (Conv2D)        59,952   smul_f32_f32 
+19      22     _Relu_7_output_0 (Nonlinearity)            624     op_f32_f32 
+20      23     _b3_conv2_Conv_output_0 (Conv2D)        89,904   smul_f32_f32 
+21      24     _Relu_8_output_0 (Nonlinearity)            624     op_f32_f32 
+22      25     _b3_conv3_Conv_output_0 (Conv2D)        30,000   smul_f32_f32 
+23      20     _b3_skip_Conv_output_0 (Conv2D)         20,016   smul_f32_f32 
+24      26     _Add_2_output_0 (Eltwise/add)              624     op_f32_f32 
+25      27     _Relu_9_output_0 (Nonlinearity)            624     op_f32_f32 
+26      28     _GlobalAveragePool_output_0 (Pool)         624   smul_f32_f32 
+27      30     output (Dense)                             490   smul_f32_f32 
+------- ------ ------------------------------------ --------- -------------- 
+total                                                 673,850 
+
+Number of operation types
+---------------- --------- ----------- 
+operation type           #           % 
+---------------- --------- ----------- 
+smul_f32_f32       662,666       98.3% 
+op_f32_f32          11,184        1.7% 
+
+Complexity report (model)
+------ ----------------------------- ------------------------- ------------------------- ------ 
+m_id   name                          c_macc                    c_rom                     c_id   
+------ ----------------------------- ------------------------- ------------------------- ------ 
+30     fc_weight                     |                  0.1%   ||                 1.7%   [27]   
+2      _conv1_Conv_output_0          ||||||||||||||||  14.0%   |||||              6.6%   [0]    
+3      _Relu_output_0                |                  0.1%   |                  0.0%   [1]    
+4      _b1_skip_Conv_output_0        ||||               2.8%   |                  1.4%   [7]    
+5      _b1_conv1_Conv_output_0       ||||||||||         8.4%   |||                4.0%   [2]    
+6      _Relu_1_output_0              |                  0.2%   |                  0.0%   [3]    
+7      _b1_conv2_Conv_output_0       ||||||||||||||    12.6%   ||||               6.0%   [4]    
+8      _Relu_2_output_0              |                  0.2%   |                  0.0%   [5]    
+9      _b1_conv3_Conv_output_0       |||||              4.2%   ||                 2.1%   [6]    
+10     _Add_output_0                 |                  0.2%   |                  0.0%   [8]    
+11     _Relu_3_output_0              |                  0.2%   |                  0.0%   [9]    
+12     _b2_skip_Conv_output_0        ||||               2.9%   ||                 2.7%   [15]   
+13     _b2_conv1_Conv_output_0       ||||||||||         8.6%   ||||||             8.0%   [10]   
+14     _Relu_4_output_0              |                  0.1%   |                  0.0%   [11]   
+15     _b2_conv2_Conv_output_0       |||||||||||||     11.4%   |||||||           10.6%   [12]   
+16     _Relu_5_output_0              |                  0.1%   |                  0.0%   [13]   
+17     _b2_conv3_Conv_output_0       |||||              3.8%   |||                3.6%   [14]   
+18     _Add_1_output_0               |                  0.1%   |                  0.0%   [16]   
+19     _Relu_6_output_0              |                  0.1%   |                  0.0%   [17]   
+20     _b3_skip_Conv_output_0        ||||               3.0%   ||||               5.4%   [23]   
+21     _b3_conv1_Conv_output_0       ||||||||||         8.9%   |||||||||||       15.9%   [18]   
+22     _Relu_7_output_0              |                  0.1%   |                  0.0%   [19]   
+23     _b3_conv2_Conv_output_0       |||||||||||||||   13.3%   ||||||||||||||||  23.8%   [20]   
+24     _Relu_8_output_0              |                  0.1%   |                  0.0%   [21]   
+25     _b3_conv3_Conv_output_0       |||||              4.5%   ||||||             8.1%   [22]   
+26     _Add_2_output_0               |                  0.1%   |                  0.0%   [24]   
+27     _Relu_9_output_0              |                  0.1%   |                  0.0%   [25]   
+28     _GlobalAveragePool_output_0   |                  0.1%   |                  0.0%   [26]   
+------ ----------------------------- ------------------------- ------------------------- ------ 
+macc=673,850 weights=116,840 act=10,208 ram_io=0
+ 
+ Requested memory size by section - "stm32h7" target
+ ------------------------------ -------- --------- ------- -------- 
+ module                             text    rodata    data      bss 
+ ------------------------------ -------- --------- ------- -------- 
+ NetworkRuntime1020_CM7_GCC.a     10,892         0       0        0 
+ kws.o                             1,512       224   8,896      340 
+ kws_data.o                           48        16      88        0 
+ lib (toolchain)*                      0         0       0        0 
+ ------------------------------ -------- --------- ------- -------- 
+ RT total**                       12,452       240   8,984      340 
+ ------------------------------ -------- --------- ------- -------- 
+ weights                               0   116,840       0        0 
+ activations                           0         0       0   10,208 
+ io                                    0         0       0        0 
+ ------------------------------ -------- --------- ------- -------- 
+ TOTAL                            12,452   117,080   8,984   10,548 
+ ------------------------------ -------- --------- ------- -------- 
+ *  toolchain objects (libm/libgcc*)
+ ** RT AI runtime objects (kernels+infrastructure)
+  
+  Summary - "stm32h7" target
+  ---------------------------------------------------
+               FLASH (ro)      %*   RAM (rw)       % 
+  ---------------------------------------------------
+  RT total         21,676   15.6%      9,324   47.7% 
+  ---------------------------------------------------
+  TOTAL           138,516             19,532         
+  ---------------------------------------------------
+  *  rt/total
+
+
+Generated files (7)
+---------------------------------------------------------- 
+C:\Users\86138\.stm32cubemx\kws_output\kws_data_params.h   
+C:\Users\86138\.stm32cubemx\kws_output\kws_data_params.c   
+C:\Users\86138\.stm32cubemx\kws_output\kws_data.h          
+C:\Users\86138\.stm32cubemx\kws_output\kws_data.c          
+C:\Users\86138\.stm32cubemx\kws_output\kws_config.h        
+C:\Users\86138\.stm32cubemx\kws_output\kws.h               
+C:\Users\86138\.stm32cubemx\kws_output\kws.c               

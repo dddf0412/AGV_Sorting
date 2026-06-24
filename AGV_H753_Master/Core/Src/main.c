@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "crc.h"
 #include "dcmi.h"
 #include "dfsdm.h"
 #include "dma.h"
@@ -27,6 +28,7 @@
 #include "spi.h"
 #include "usart.h"
 #include "gpio.h"
+#include "app_x-cube-ai.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -77,6 +79,14 @@ int main(void)
   /* MPU Configuration--------------------------------------------------------*/
   MPU_Config();
 
+  /* Enable the CPU Cache */
+
+  /* Enable I-Cache---------------------------------------------------------*/
+  SCB_EnableICache();
+
+  /* Enable D-Cache---------------------------------------------------------*/
+  SCB_EnableDCache();
+
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -93,7 +103,27 @@ int main(void)
   PeriphCommonClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  /* PLL2 must be enabled BEFORE DFSDM init (which needs audio clock).
+     SAI1 MspInit also configures PLL2 but runs later; the static guard
+     prevents double-config, making the MspInit call a safe no-op. */
+  {
+    static uint8_t _pll2_done = 0;
+    if (!_pll2_done) {
+      RCC_PeriphCLKInitTypeDef p = {0};
+      p.PeriphClockSelection = RCC_PERIPHCLK_SAI1;
+      p.PLL2.PLL2M = 8;
+      p.PLL2.PLL2N = 172;
+      p.PLL2.PLL2P = 2;
+      p.PLL2.PLL2Q = 4;
+      p.PLL2.PLL2R = 2;
+      p.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_0;
+      p.PLL2.PLL2VCOSEL = RCC_PLL2VCOMEDIUM;
+      p.PLL2.PLL2FRACN = 0;
+      p.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLL2;
+      HAL_RCCEx_PeriphCLKConfig(&p);
+      _pll2_done = 1;
+    }
+  }
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -107,6 +137,8 @@ int main(void)
   MX_DFSDM1_Init();
   MX_USART1_UART_Init();
   MX_SAI1_Init();
+  MX_CRC_Init();
+  MX_X_CUBE_AI_Init();
   /* USER CODE BEGIN 2 */
   App_Init();
   /* USER CODE END 2 */
@@ -118,6 +150,7 @@ int main(void)
       App_Run();
     /* USER CODE END WHILE */
 
+  MX_X_CUBE_AI_Process();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

@@ -38,14 +38,22 @@ static void mic_send_chunk(int16_t *buf, uint16_t n)
 
 void HAL_DFSDM_FilterRegConvHalfCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm_filter)
 {
-    if (hdfsdm_filter == &hdfsdm1_filter0)
+    if (hdfsdm_filter == &hdfsdm1_filter0) {
+        SCB_InvalidateDCache_by_Addr(
+            (uint32_t *)((uint32_t)&mic_raw[MIC_BUFFER_SIZE / 2] & ~0x1F),
+            (MIC_BUFFER_SIZE / 2 * sizeof(int32_t) + 31) & ~0x1F);
         mic_half_ready = 1;
+    }
 }
 
 void HAL_DFSDM_FilterRegConvCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm_filter)
 {
-    if (hdfsdm_filter == &hdfsdm1_filter0)
+    if (hdfsdm_filter == &hdfsdm1_filter0) {
+        SCB_InvalidateDCache_by_Addr(
+            (uint32_t *)((uint32_t)&mic_raw[0] & ~0x1F),
+            (MIC_BUFFER_SIZE / 2 * sizeof(int32_t) + 31) & ~0x1F);
         mic_full_ready = 1;
+    }
 }
 
 /* ---------------- 数据转换 ---------------- */

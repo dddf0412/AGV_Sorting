@@ -9,6 +9,7 @@
 #include "screen.h"
 #include "camera.h"
 #include "wm8960.h"
+#include "kws_pipeline.h"
 extern UART_HandleTypeDef huart1;
 #endif
 
@@ -28,13 +29,13 @@ void App_Init(void)
 #if (APP_MODE == 0)
     printf("\r\n========== H753 Master Simulator ==========\r\n");
 #else
-    printf("\r\n========== H753 Mic Test ==========\r\n");
+    printf("\r\n========== H753 KWS ==========\r\n");
     // Screen_Init(&huart1);
     // Camera_Init(); Camera_Start();
     // WM8960_Init();
 
-    mic_start_stream();
-    printf("[App] Mic streaming (38.4kHz)\r\n");
+    KWS_Init(); mic_start_monitor(KWS_Feed);
+    printf("[App] KWS running\r\n");
 #endif
 }
 
@@ -101,6 +102,10 @@ void App_Run(void)
 
     // NFC_Task();
     mic_process();
+    if (KWS_IsResultReady()) {
+        KWS_Result_t r = KWS_GetResult();
+        printf("[KWS] %s (%d%%)\r\n", r.label, r.confidence);
+    }
     // Camera frame handling
 
 #endif /* APP_MODE */

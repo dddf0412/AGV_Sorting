@@ -41,8 +41,12 @@ Desktop.ini
 # Temporary
 tmp/
 temp/
-training/data/
+training/data/*
+!training/data/download_dataset.py
 training/spectrograms.pt
 training/kws_model_ds_cnn_s.onnx
 training/kws_model_se_ds_cnn.onnx
 .claude/
+__pycache__/
+*.pyc
+.ai/
