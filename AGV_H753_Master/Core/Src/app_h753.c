@@ -28,19 +28,13 @@ void App_Init(void)
 #if (APP_MODE == 0)
     printf("\r\n========== H753 Master Simulator ==========\r\n");
 #else
-    printf("\r\n========== H753 Master Running ==========\r\n");
-    Screen_Init(&huart1);
-
-    if (Camera_Init() == CAMERA_OK)
-        Camera_Start();
-    else
-        printf("[App] Camera init failed!\r\n");
+    printf("\r\n========== H753 Mic Test ==========\r\n");
+    // Screen_Init(&huart1);
+    // Camera_Init(); Camera_Start();
+    // WM8960_Init();
 
     mic_start_stream();
     printf("[App] Mic streaming (38.4kHz)\r\n");
-
-    if (WM8960_Init() != 0)
-        printf("[App] WM8960 init failed!\r\n");
 #endif
 }
 
@@ -105,13 +99,9 @@ void App_Run(void)
     }
 #endif /* CAN_ENABLE */
 
-    NFC_Task();
+    // NFC_Task();
     mic_process();
+    // Camera frame handling
 
-    if (camera_frame_ready) {
-        camera_frame_ready = 0;
-        Camera_DumpFrame();
-        Camera_RestartSnapshot();
-    }
 #endif /* APP_MODE */
 }
